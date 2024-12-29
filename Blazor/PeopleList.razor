@@ -1,0 +1,36 @@
+﻿@page "/people"
+@page "/"
+<TableTemplate RowType="Person" RowData="People"
+               Highlight="@(p => p.Location?.City)"
+               SortDirection="@(p => p.Surname)">
+    <Header>
+        <tr><th>ID</th><th>Name</th><th>Dept</th><th>Location</th></tr>
+        <td></td>
+    </Header>
+    <RowTemplate Context="p">
+        <td>@p.PersonId</td>
+        <td>@p.Surname, @p.Firstname</td>
+        <td>@p.Department?.Name</td>
+        <td>@p.Location?.City, @p.Location?.State</td>
+        <td>
+            <NavLink class="btn btn-sm btn-info"
+                     href="@GetEditUrl(p.PersonId)">
+                Edit
+            </NavLink>
+        </td>
+    </RowTemplate>
+</TableTemplate>
+
+<NavLink class="btn btn-primary" href="/depts">Departments</NavLink>
+
+@code
+{
+    [Inject] DataContext? Context { get; set; }
+
+    IEnumerable<Person>? People => Context?.People
+        .Include(p => p.Department)
+        .Include(p => p.Location);
+
+    string GetEditUrl(long id) => $"/person/{id}";
+
+}

@@ -1,0 +1,47 @@
+﻿@typeparam TValue
+@using System.Diagnostics.CodeAnalysis
+@inherits InputBase<TValue>
+
+<select class="form-control @CssClass" value="@CurrentValueAsString"
+        @onchange="@(ev => CurrentValueAsString = ev.Value as string)">
+    @ChildContent
+    @foreach (KeyValuePair<string, TValue> kvp in Values)
+    {
+        <option value="@kvp.Value">@kvp.Key</option>
+    }
+</select>
+
+@code
+{
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public IDictionary<string, TValue> Values { get; set; } = new Dictionary<string, TValue>();
+    
+    [Parameter] public Func<string, TValue>? Parser { get; set; }
+
+    protected override bool TryParseValueFromString(string? value,
+        out TValue? result,
+        [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        try
+        {
+            if (Parser != null && value != null)
+            {
+                result = Parser(value);
+                validationErrorMessage = null;
+                return true;
+            }
+
+            result = default;
+            validationErrorMessage = "Value or parser not defined";
+            return false;
+        }
+        catch
+        {
+            result = default;
+            validationErrorMessage = "The value is not valid";
+            return false;
+        }
+    }
+
+}

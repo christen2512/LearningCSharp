@@ -1,0 +1,38 @@
+﻿<button class="@ButtonClass" @attributes="Attributes" disabled="@Disabled">
+    @ChildContent
+</button>
+
+@code
+{
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    
+    [Parameter] public string BtnTheme { get; set; } = "primary";
+
+    [Parameter] public string DisabledClass { get; set; } = "btn-outline-dark disabled";
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? Attributes { get; set; }
+    
+    [CascadingParameter]
+    public EditContext? CurrentEditContext { get; set; }
+    
+    private bool Disabled { get; set; }
+
+    private string ButtonClass =>
+        Disabled
+            ? $"btn btn-{BtnTheme} {DisabledClass} mt-2"
+            : $"btn btn-{BtnTheme} mt-2";
+
+    protected override void OnInitialized()
+    {
+        SetButtonState();
+        if (CurrentEditContext is null) return;
+
+        CurrentEditContext.OnValidationStateChanged += (_, _) => SetButtonState();
+        CurrentEditContext.Validate();
+    }
+
+    private void SetButtonState() =>
+        Disabled = CurrentEditContext?.GetValidationMessages().Any() ?? false; 
+
+}
